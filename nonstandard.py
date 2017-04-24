@@ -17,11 +17,9 @@ import os.path
 from importlib.abc import Loader, MetaPathFinder
 from importlib.util import spec_from_file_location
 
-MAIN = False
 from_nonstandard = re.compile("(^from\s+__nonstandard__\s+import\s+)")
 included_transformers_path = os.path.join(os.path.dirname(__file__), 
                                           "transformers")
-transformers = set([])
 
 class _MyMetaFinder(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
@@ -59,7 +57,11 @@ class _MyLoader(Loader):
         return None # use default module creation semantics
 
     def exec_module(self, module):
-        global MAIN
+        global other_is_main  # defined at the bottom of this file
+        if other_is_main:
+            module.__name__ = "__main__"
+            other_is_main = False
+
         with open(self.filename) as f:
             source = f.read()
 
@@ -72,9 +74,19 @@ class _MyLoader(Loader):
                     break
 
         exec(source, vars(module))
-        if MAIN:
-            module.__name__ = "__main__"
-            MAIN = False
+
+
+transformers = set([])
+def add_transformers(line):
+    assert from_nonstandard.match(line)
+    # we started with: "from __nonstandard__ import transformer1 [,...]"
+    line = from_nonstandard.sub(' ', line)
+    # we now have: " transformer1 [,...]"
+    line = line.split("#")[0]    # remove any end of line comments
+    # and insert each transformer as an item in a list
+    for trans in line.replace(' ', '').split(','):
+        transformers.add(trans)
+
 
 def _transform(source):
     '''Used to convert the source code, and create a new module
@@ -90,7 +102,7 @@ def _transform(source):
 
        "transformers" are modules which must contain a function
 
-           transform_source_code(source)
+           transform_source(source)
 
        which returns a tranformed source.
     '''
@@ -98,13 +110,7 @@ def _transform(source):
     linenumbers = []
     for number, line in enumerate(lines):
         if from_nonstandard.match(line):
-            # we started with: "from __nonstandard__ import transformer1 [,...]"
-            line = from_nonstandard.sub(' ', line)
-            # we now have: " transformer1 [,...]"
-            line = line.split("#")[0]    # remove any end of line comments
-            # and insert each transformer as an item in a list
-            for trans in line.replace(' ', '').split(','):
-                transformers.add(trans)
+            add_transformers(line)
             linenumbers.insert(0, number)
 
     # drop the "fake" import from the source code
@@ -121,7 +127,9 @@ def _transform(source):
             pass
     return source
 
+
 class NonStandardInteractiveConsole(code.InteractiveConsole):
+    LINETRANSFORM = True
     def push(self, line):
         """Push a line to the interpreter.
 
@@ -136,29 +144,28 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         with in some way (this is the same as runsource()).
 
         """
+        if line.strip() == "enable_block_transform":
+            self.LINETRANSFORM = False
+            line = ""
+
         if from_nonstandard.match(line):
-            # we started with: "from __nonstandard__ import transformer1 [,...]"
-            line = from_nonstandard.sub(' ', line)
-            # we now have: " transformer1 [,...]"
-            line = line.split("#")[0]    # remove any end of line comments
-            # and insert each transformer as an item in a list
-            for trans in line.replace(' ', '').split(','):
-                transformers.add(trans)
+            add_transformers(line)
         else:
+            if self.LINETRANSFORM:
+                line = _transform(line)
             self.buffer.append(line)
+
         source = "\n".join(self.buffer)
-        source = _transform(source)
+        if not self.LINETRANSFORM:
+            source = _transform(source)
         more = self.runsource(source, self.filename)
         if not more:
             self.resetbuffer()
         return more
 
+banner = "Non-standard Python interpreter\nPython version: %s\n" % sys.version
 def start_console():
-    banner = """Welcome to the non-standard Python interpreter which allows you
-to easily experiment with source code transformations.
-Python version: %s\n""" % sys.version
-
-    sys.ps1 = "--> "
+    sys.ps1 = "~~> "
     console = NonStandardInteractiveConsole()
     try:
         console.interact(banner=banner)
@@ -171,12 +178,14 @@ Python version: %s\n""" % sys.version
 # is when we run a single script using
 # python nonstandard.py script
 
+other_is_main = False
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         # this program was started by
-        # $ python import_experimental.py some_script
+        # $ python nonstandard.py some_script
         # and we will want some_script.__name__ == "__main__"
-        MAIN = True
+        other_is_main = True
+        __name__ = __file__.split(".")[0]
         __import__(sys.argv[1])
         if sys.flags.interactive:
             start_console()
