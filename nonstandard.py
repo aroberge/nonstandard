@@ -9,6 +9,7 @@ This code was adapted from
 http://stackoverflow.com/questions/43571737/how-to-implement-an-import-hook-that-can-modify-the-source-code-on-the-fly-using/43573798#43573798
 which is a question I asked.
 '''
+import code
 import re
 import sys
 import os.path
@@ -20,10 +21,7 @@ MAIN = False
 from_nonstandard = re.compile("(^from\s+__nonstandard__\s+import\s+)")
 included_transformers_path = os.path.join(os.path.dirname(__file__), 
                                           "transformers")
-_imposed_transformers = []
-
-def impose_transformer(name):
-    _imposed_transformers.append(name)
+transformers = set([])
 
 class _MyMetaFinder(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
@@ -65,7 +63,7 @@ class _MyLoader(Loader):
         with open(self.filename) as f:
             source = f.read()
 
-        if _imposed_transformers:  
+        if transformers:  
             source = _transform(source)
         else:
             for linenumber, line in enumerate(source.split('\n')):
@@ -97,7 +95,6 @@ def _transform(source):
        which returns a tranformed source.
     '''
     lines = source.split('\n')
-    transformers = []
     linenumbers = []
     for number, line in enumerate(lines):
         if from_nonstandard.match(line):
@@ -106,7 +103,8 @@ def _transform(source):
             # we now have: " transformer1 [,...]"
             line = line.split("#")[0]    # remove any end of line comments
             # and insert each transformer as an item in a list
-            transformers.extend(line.replace(' ', '').split(','))
+            for trans in line.replace(' ', '').split(','):
+                transformers.add(trans)
             linenumbers.insert(0, number)
 
     # drop the "fake" import from the source code
@@ -114,12 +112,64 @@ def _transform(source):
         del lines[number]
     source = '\n'.join(lines)
 
-    transformers.extend(_imposed_transformers)
     for transformer in transformers:
         mod_name = __import__(transformer)
-        source = mod_name.transform_source(source)
+        try:
+            source = mod_name.transform_source(source)
+            # may raise an exception at first from the interactive console
+        except AttributeError:
+            pass
     return source
 
+class NonStandardInteractiveConsole(code.InteractiveConsole):
+    def push(self, line):
+        """Push a line to the interpreter.
+
+        The line should not have a trailing newline; it may have
+        internal newlines.  The line is appended to a buffer and the
+        interpreter's runsource() method is called with the
+        concatenated contents of the buffer as source.  If this
+        indicates that the command was executed or invalid, the buffer
+        is reset; otherwise, the command is incomplete, and the buffer
+        is left as it was after the line was appended.  The return
+        value is 1 if more input is required, 0 if the line was dealt
+        with in some way (this is the same as runsource()).
+
+        """
+        if from_nonstandard.match(line):
+            # we started with: "from __nonstandard__ import transformer1 [,...]"
+            line = from_nonstandard.sub(' ', line)
+            # we now have: " transformer1 [,...]"
+            line = line.split("#")[0]    # remove any end of line comments
+            # and insert each transformer as an item in a list
+            for trans in line.replace(' ', '').split(','):
+                transformers.add(trans)
+        else:
+            self.buffer.append(line)
+        source = "\n".join(self.buffer)
+        source = _transform(source)
+        more = self.runsource(source, self.filename)
+        if not more:
+            self.resetbuffer()
+        return more
+
+def start_console():
+    banner = """Welcome to the non-standard Python interpreter which allows you
+to easily experiment with source code transformations.
+Python version: %s\n""" % sys.version
+
+    sys.ps1 = "--> "
+    console = NonStandardInteractiveConsole()
+    try:
+        console.interact(banner=banner)
+    except SystemExit:
+        print("Leaving non-standard interpreter.\n")
+        sys.ps1 = ">>> "
+
+
+# The only situation in which we do not start an interactive console
+# is when we run a single script using
+# python nonstandard.py script
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -128,3 +178,11 @@ if __name__ == '__main__':
         # and we will want some_script.__name__ == "__main__"
         MAIN = True
         __import__(sys.argv[1])
+        if sys.flags.interactive:
+            start_console()
+    else:
+        start_console()
+else:
+    start_console()
+
+
