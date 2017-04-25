@@ -1,8 +1,6 @@
-from io import StringIO
-import tokenize
+from translate import translate
 
-
-def transform_source(text):
+def transform_source(source):
     '''Input text is assumed to contain some French equivalent words to
        normal Python keywords and a few builtin functions.
        These are transformed into normal Python keywords and functions.
@@ -20,11 +18,4 @@ def transform_source(text):
                    'pendant': 'while', 'avec': 'with', 'céder': 'yield',
                    'imprime': 'print', 'intervalle': 'range'}
 
-    toks = tokenize.generate_tokens(StringIO(text).readline)
-    result = []
-    for toktype, tokvalue, _, _, _ in toks:
-        if toktype == tokenize.NAME and tokvalue in dictionary:
-            result.append((toktype, dictionary[tokvalue]))
-        else:
-            result.append((toktype, tokvalue))
-    return tokenize.untokenize(result)
+    return translate(source, dictionary)

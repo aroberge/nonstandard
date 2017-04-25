@@ -1,30 +1,12 @@
-from io import StringIO
-import tokenize
+from translate import translate
 
-
-def transform_source(text):
+def transform_source(source):
     '''Replaces instances of
-
-        function ...
+        function
     by
-
-        lambda ...
-
+        lambda 
     '''
-
-    function_keyword = 'function'
-
-    if text.count(function_keyword) == 0:
-        return text
-
-    toks = tokenize.generate_tokens(StringIO(text).readline)
-    result = []
-    for toktype, tokvalue, _, _, _ in toks:
-        if toktype == tokenize.NAME and tokvalue == function_keyword:
-            result.append((tokenize.NAME, 'lambda'))
-            continue
-        result.append((toktype, tokvalue))
-    return tokenize.untokenize(result)
+    return translate(source, {'function': 'lambda'})
 
 
 if __name__ == '__main__':

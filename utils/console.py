@@ -32,10 +32,13 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         # dropped if it is empty. We take care of this as follows:
         if source == self.last_source:
             source += "\n"
-        self.last_source = source
         more = self.runsource(source, self.filename)
+        
         if not more:
             self.resetbuffer()
+            self.last_source = ''
+        else:
+            self.last_source = source
         return more
 
 banner = """Python version: %s
