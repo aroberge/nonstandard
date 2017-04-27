@@ -1,4 +1,4 @@
-from translate import translate
+from utils.one2one import translate
 
 def transform_source(source):
     '''Input text is assumed to contain some French equivalent words to

@@ -1,4 +1,4 @@
-from translate import translate
+from utils.one2one import translate
 
 def transform_source(source):
     '''Replaces instances of

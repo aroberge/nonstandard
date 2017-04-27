@@ -8,13 +8,10 @@ def transform_source(text):
         repeat n:
     by
 
-        for VAR_i in range(n):
+        for __VAR_i in range(n):
 
-    where VAR_i is a string that does not appear elsewhere
-    in the code sample.  This code is a bit more robust than
-    the original version but the output has additional and
-    unconsequential spaces in it which makes the
-    comparison with what is expected a bit more difficult.
+    where __VAR_i is a string that does not appear elsewhere
+    in the code sample.
     '''
 
     loop_keyword = 'repeat'
@@ -49,17 +46,20 @@ def transform_source(text):
     return tokenize.untokenize(result)
 
 
+ALL_NAMES = []
+
 def get_unique_variable_names(text, nb):
     '''returns a list of possible variables names that
-       are not found in the original text'''
-    base_name = 'VAR_'
+       are not found in the original text.'''
+    base_name = '__VAR_'
     var_names = []
     i = 0
     j = 0
     while j < nb:
         tentative_name = base_name + str(i)
-        if text.count(tentative_name) == 0:
+        if text.count(tentative_name) == 0 and tentative_name not in ALL_NAMES:
             var_names.append(tentative_name)
+            ALL_NAMES.append(tentative_name)
             j += 1
         i += 1
     return var_names
@@ -67,14 +67,14 @@ def get_unique_variable_names(text, nb):
 if __name__ == '__main__':
     sample = '''# comment with repeat in it
 repeat 3:  # first loop
-    print('VAR_1')
+    print('__VAR_1')
     repeat (2*2):
         pass'''
 
     comparison = '''# comment with repeat in it
-for VAR_3 in range (3 ):# first loop
-    print ('VAR_1')
-    for VAR_2 in range ((2 *2 )):
+for __VAR_3 in range (3 ):# first loop
+    print ('__VAR_1')
+    for __VAR_2 in range ((2 *2 )):
         pass '''
 
     transformed = transform_source(sample)

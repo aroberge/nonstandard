@@ -83,3 +83,30 @@ class MyLoader(Loader):
                     break
 
         exec(source, vars(module))
+
+    def get_code(self, fullname):
+        # hack to silence an error when running nonstandard as main script
+        # See below for an explanation
+        return compile("None", "<string>", 'eval')
+
+"""
+When this code was run as part of a normal script, no error was raised.
+When I changed it into a package, and tried to run it as a module, an 
+error occurred as shown below. By looking at the sources for the
+importlib module, I saw that some classes had a get_code() method which
+returned a code object.  Rather than trying to recreate all the code,
+I wrote the above hack which seems to silence any error.
+
+$ python -m nonstandard
+Python version: 3.5.2 |Anaconda 4.2.0 (64-bit)| ...
+
+    Python console with easily modifiable syntax.
+
+~~> exit()
+Leaving non-standard console.
+
+Traceback (most recent call last):
+  ...
+  AttributeError: 'MyLoader' object has no attribute 'get_code'
+
+"""

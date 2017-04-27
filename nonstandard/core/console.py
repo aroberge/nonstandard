@@ -22,6 +22,7 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
 
         if transforms.from_nonstandard.match(line):
             transforms.add_transformers(line)
+            self.buffer.append("#dummy line")
         else:
             self.buffer.append(line)
 
