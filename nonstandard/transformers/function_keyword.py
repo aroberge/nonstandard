@@ -1,3 +1,12 @@
+'''    from __nonstandard__ import function_keyword
+
+enables to use the word `function` instead of `lambda`, as in
+
+    square = function x: x**2
+
+    square(3)  # returns 9
+'''
+
 from utils.one2one import translate
 
 def transform_source(source):

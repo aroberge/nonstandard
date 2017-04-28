@@ -1,30 +1,23 @@
+'''    from __nonstandard__ where_clause
+
+shows how one could use `where` as a keyword to introduce a code
+block that would be ignored by Python. The idea was to use this as
+a _pythonic_ notation as an alternative for the optional type hinting described
+in PEP484.
+
+For more details, please see two of my recent blog posts:
+
+https://aroberge.blogspot.ca/2015/12/revisiting-old-friend-yet-again.html
+
+https://aroberge.blogspot.ca/2015/01/type-hinting-in-python-focus-on.html
+
+Note that I first suggested this idea more than 12 years ago! ;-)
+
+https://aroberge.blogspot.ca/2005/01/where-keyword-and-python-as-pseudo.html
+'''
+
 from io import StringIO
 import tokenize
-
-sample_in = '''
-def twice(i, next):
-    where:
-        i: int
-        next: Function[[int], int]
-        return: int
-    return next(next(i))
-'''
-
-sample_out = '''
-def twice (i ,next ):
-    return next (next (i ))
-'''
-
-variable_in = '''
-x = 3
-where:
-    x: int
-'''
-
-variable_out = '''
-x=3
-'''
-
 
 def transform_source(text):
     '''removes a "where" clause which is identified by the use of "where"
@@ -43,10 +36,3 @@ def transform_source(text):
             result.append((toktype, tokvalue))
     return tokenize.untokenize(result)
 
-if __name__ == '__main__':
-    assert sample_out == transform_source(sample_in)
-
-    # the transformation process may leave extra spaces at the end which
-    # prevent an exact comparison from working.  Removing what are clearly
-    # superfluous spaces, the following works.
-    assert variable_out == transform_source(variable_in).replace(' ', '')

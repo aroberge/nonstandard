@@ -1,3 +1,9 @@
+'''    from __nonstandard__ import print_keyword
+
+triggers the use of the lib2to3 Python library to automatically convert
+all `print` statements (assumed to use the Python 2 syntax) into
+function calls.
+'''
 
 from utils.simple2to3 import MyRefactoringTool, get_single_fixer
 

@@ -1,3 +1,24 @@
+'''    from __nonstandard__ repeat_keyword
+
+introduces `repeat` as a keyword to write simple loops that repeat
+a set number of times.  That is:
+
+    repeat 3:
+        a = 2
+        repeat a*a:
+            pass
+
+is equivalent to
+
+    for __VAR_1 in range(3):
+        a = 2
+        for __VAR_2 in range(a*a):
+            pass
+
+The names of the variables are chosen so as to ensure that they
+do not appear in the source code to be translated.
+'''
+
 from io import StringIO
 import tokenize
 

@@ -1,13 +1,13 @@
 # About these tests
 
-For simplicity, wherever possible, I use [pytest](https://docs.pytest.org/en/latest/contents.html)'s strategy of simply using Python's `assert` statements and naming test files and test functions within these files all starting with `test_` for easy discovery. `pytest` is not part of Python's standard library and you may have to intall it. (If you use the Python Anaconda distribution from Continuum Analytics, it is likely already included.)
+For simplicity, wherever possible, I follow [pytest](https://docs.pytest.org/en/latest/contents.html)'s strategy of simply using Python's `assert` statements and naming test files and test functions within these files all starting with `test_` for easy discovery. `pytest` is not part of Python's standard library and you may have to intall it. (If you use the Python Anaconda distribution from Continuum Analytics, it is likely already included.)
 
 However, since `nonstandard` changes the way `import` works, the _normal_ approach used by `pytest` is modified.  For each test, two files are created:
 
     test_X.py
     X_testfile.py
 
-`X_testfile.py` [see below for the naming convention] is the actual file that contains the tests for the nonstandard, and almost always invalid Python syntax.  As such, it cannot be imported by the normal mechanism.  `test_X.py` imports `nonstandard`, which install an import hook. It then imports `X_testfile.py` which can be processed by the `nonstandard` import hook.
+`X_testfile.py` [_see below for the naming convention_] is the actual file that contains the tests for the nonstandard, and almost always invalid Python syntax.  As such, it cannot be imported by the normal mechanism.  `test_X.py` imports `nonstandard`, which install an import hook. It then imports `X_testfile.py` which can be processed by the `nonstandard` import hook.
 
 `X_testfile.py`'s content should be something like:
 
@@ -27,7 +27,7 @@ To ensure that the development version of `nonstandard` is used, `test_X.py` wil
 
 ### About the naming convention 
 
-Suppose I define a transformation named `X` found in file `X.py`. When creating test files in the `tests` directory, it is important not to have any file named `X.py` as well.  Furthermore, pytest automatically loads files named `test_Y.py` _and_ apparently also `Y_test.py`.  For this reason, if I need a file imported by `test_X.py`, I will often most often name it `X_testfile.py` so as to avoid any confusion.
+Suppose I define a transformation named `X` found in file `X.py`. When creating test files in the `tests` directory, it is important not to have any file named `X.py` as well.  Furthermore, pytest automatically loads files named `test_X.py` _and_ apparently also `X_test.py`.  For this reason, if I need a file imported by `test_X.py`, I will often most often name it `X_testfile.py` so as to avoid any confusion.
 
 ## Problem with output capture
 
@@ -40,7 +40,7 @@ To write a series of tests that can be discovered by `pytest`, a file named `tes
     from .common import nonstandard
     from .X_testfile import *
 
-The second line will ensure that functions named `test_Y` are discovered by pytest. 
+The second line will ensure that functions named `test_X` are discovered by pytest. 
 
 To run all tests from the parent directory containing the tests folder, the following can be used:
 

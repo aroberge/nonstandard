@@ -1,9 +1,18 @@
-''' transform code of the form
-name ++
-into 
-name += 1
+'''
+    from __nonstandard__ import increment
 
-This is not fully tested; a more robust solution could always be implemented 
+enables transformation of code of the form
+    
+    name ++  # optional comment
+
+into 
+
+    name += 1  # optional comment
+
+Space(s) betwen `name` and `++` are ignored.
+
+This can change not only code but content of triple quoted strings
+as well. A more robust solution could always be implemented 
 using the tokenize module.
 '''
 

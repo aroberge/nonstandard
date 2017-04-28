@@ -1,3 +1,28 @@
+'''    from __nonstandard__ import french_syntax
+
+allows the use of a predefined subset of Python keyword to be written
+as their French equivalent; English and French keywords can be mixed.
+
+Thus, code like:
+
+    si Vrai:
+        imprime("French can be used.")
+    autrement:
+        print(Faux)
+
+Will be translated to
+
+    if True:
+        print("French can be used.")
+    else:
+        print(False)
+
+This type of transformation could be useful when teaching the
+very basic concepts of programming to (young) beginners who use 
+non-ascii based language and would find it difficult to type
+ascii characters. 
+'''
+
 from utils.one2one import translate
 
 def transform_source(source):
