@@ -69,6 +69,6 @@ def transform(source):
             source = mod_name.transform_source(source)
             # may raise an AttributeError at first from the interactive console
         except AttributeError:
-            pass
+            print("AttributeError ignored in transforms.py")
 
     return source

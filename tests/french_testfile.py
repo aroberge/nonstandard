@@ -1,4 +1,8 @@
+''' Just testing a small subset of all the French syntax '''
+
 from __nonstandard__ import french_syntax
+
+de math importe pi 
 
 def test_bool():
     assert Vrai, "Vrai is True"

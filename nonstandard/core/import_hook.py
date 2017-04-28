@@ -74,14 +74,15 @@ class MyLoader(Loader):
         with open(self.filename) as f:
             source = f.read()
 
-        if transforms.transformers:  
+        if transforms.transformers: 
             source = transforms.transform(source)
         else:
             for linenumber, line in enumerate(source.split('\n')):
                 if transforms.from_nonstandard.match(line):
+                    ## transforms.transform will extract all such relevant
+                    ## lines and add them all relevant transformers
                     source = transforms.transform(source)
                     break
-
         exec(source, vars(module))
 
     def get_code(self, fullname):

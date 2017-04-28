@@ -1,7 +1,7 @@
 try:
     from .common import nonstandard
-    from .french import *
-except ImportError:
+    from .french_testfile import *
+except SystemError:
     import common
-    import french
-    common.single_file_test(french)
+    import french_testfile
+    common.single_file_test(french_testfile)
