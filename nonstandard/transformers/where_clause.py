@@ -1,4 +1,4 @@
-'''    from __nonstandard__ where_clause
+'''    from __nonstandard__ import where_clause
 
 shows how one could use `where` as a keyword to introduce a code
 block that would be ignored by Python. The idea was to use this as

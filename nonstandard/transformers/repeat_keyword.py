@@ -1,4 +1,4 @@
-'''    from __nonstandard__ repeat_keyword
+'''    from __nonstandard__ import repeat_keyword
 
 introduces `repeat` as a keyword to write simple loops that repeat
 a set number of times.  That is:

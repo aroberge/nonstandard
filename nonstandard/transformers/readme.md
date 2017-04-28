@@ -123,7 +123,7 @@ function calls.
 
 ## repeat_keyword.py 
 
-    from __nonstandard__ repeat_keyword
+    from __nonstandard__ import repeat_keyword
 
 introduces `repeat` as a keyword to write simple loops that repeat
 a set number of times.  That is:
@@ -146,7 +146,7 @@ do not appear in the source code to be translated.
 
 ## where_clause.py 
 
-    from __nonstandard__ where_clause
+    from __nonstandard__ import where_clause
 
 shows how one could use `where` as a keyword to introduce a code
 block that would be ignored by Python. The idea was to use this as
