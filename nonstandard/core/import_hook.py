@@ -22,6 +22,7 @@ included_transformers_path = os.path.abspath(
                                 os.path.join(os.path.dirname(__file__),
                                              "..", 
                                              "transformers" )) 
+sys.path.append(included_transformers_path)
 
 main_module_name = None
 def import_main(name):
@@ -33,7 +34,7 @@ def import_main(name):
 class MyMetaFinder(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         if not path:
-            path = [os.getcwd(), included_transformers_path]
+            path = [os.getcwd()]#, included_transformers_path]
         if "." in fullname:
             name = fullname.split(".")[-1]
         else:
@@ -56,7 +57,6 @@ class MyMetaFinder(MetaPathFinder):
         return None # we don't know how to import this
 
 sys.meta_path.insert(0, MyMetaFinder())
-
 
 class MyLoader(Loader):
     def __init__(self, filename):

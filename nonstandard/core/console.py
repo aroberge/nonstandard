@@ -4,9 +4,9 @@ import sys
 from . import transforms
 
 class NonStandardInteractiveConsole(code.InteractiveConsole):
-    last_source = ''
+
     def push(self, line):
-        """Push a line to the interpreter.
+        """Transform and push a line to the interpreter.
 
         The line should not have a trailing newline; it may have
         internal newlines.  The line is appended to a buffer and the
@@ -20,27 +20,47 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
 
         """
 
+        # In the console, we do transformations on one line at a time,
+        # and try to execute it.
+
+
         if transforms.from_nonstandard.match(line):
             transforms.add_transformers(line)
-            self.buffer.append("#dummy line")
+            self.buffer.append('')
+        elif not line:  # 
+            self.buffer.append("\n") # ensure that a block ends
         else:
+            # Lines of code can be invalid Python syntax if:
+            #   1. they are indented
+            #   2. they end with ":" indicating the beginning of a block
+            # We take care of these two problems as follows:
+            #   1. we remove any indent of the line prior to the transformation
+            #      and reinsert it after the transformation
+            #   2. we add a pass statement as a block prior to the
+            #      transformation and we remove it afterwards.
+            before_len = len(line)
+            line = line.lstrip()
+            indent = before_len - len(line)
+
+            if line.endswith(":"):
+                line = line + " pass"
+
+            line = transforms.transform(line)
+
+            if line.endswith(": pass"):
+                line = line[:-5]
+                
+            line = " " * indent + line
             self.buffer.append(line)
 
         source = "\n".join(self.buffer)
-        source = transforms.transform(source)
 
-        # transformations may result in the last line of code being 
-        # dropped if it is empty. We take care of this as follows:
-        if source == self.last_source:
-            source += "\n"
         more = self.runsource(source, self.filename)
-        
+
         if not more:
             self.resetbuffer()
-            self.last_source = ''
-        else:
-            self.last_source = source
         return more
+
 
 banner = """Python version: %s
 

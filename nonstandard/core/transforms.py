@@ -1,5 +1,6 @@
 
 import re
+import sys
 
 from_nonstandard = re.compile("(^from\s+__nonstandard__\s+import\s+)")
 
@@ -7,13 +8,29 @@ from_nonstandard = re.compile("(^from\s+__nonstandard__\s+import\s+)")
 transformers = set([])
 def add_transformers(line):
     assert from_nonstandard.match(line)
+
+    # We are adding a transformer built from normal/standard Python code.
+    # As we are not performing transformations, we temporarily disable
+    # our import hook, both to avoid potential problems AND because we
+    # found that this resulted in much faster code.
+    hook = sys.meta_path[0]
+    sys.meta_path = sys.meta_path[1:]
+
     # we started with: "from __nonstandard__ import transformer1 [,...]"
     line = from_nonstandard.sub(' ', line)
     # we now have: " transformer1 [,...]"
     line = line.split("#")[0]    # remove any end of line comments
     # and insert each transformer as an item in a list
     for trans in line.replace(' ', '').split(','):
+        try:
+            __import__(trans)
+        except ImportError:
+            print("Import Error: %s not found" % trans)
+            continue
         transformers.add(trans)
+
+    # resume import hook
+    sys.meta_path.insert(0, hook)
 
 
 def transform(source):
@@ -50,7 +67,8 @@ def transform(source):
         mod_name = __import__(transformer)
         try:
             source = mod_name.transform_source(source)
-            # may raise an exception at first from the interactive console
+            # may raise an AttributeError at first from the interactive console
         except AttributeError:
             pass
+
     return source
