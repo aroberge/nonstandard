@@ -27,12 +27,19 @@ There are many ways to use `nonstandard`. If you simply want to have start a Pyt
 
 More to come ...
 
+_Note that there are two more **readme** files, one in the tests directory and the other in the nonstandard.transformers directory._
+
 
 ## To do
 
 [ ] Complete readme
+
 [ ] Add code/warning to remove code-block based transformations for console 
+
 [ ] Add code transformation illustrating rejected PEP 315  (do while)
+
 [ ] Add code transformation illustrating rejected PEP 284 (for lower <= var < upper:)
-[ ] Add code transformation illustrating new PEP 542 (dot assignment in functions)
+
+[x] Add code transformation illustrating new PEP 542 (dot assignment in functions)
+
 [ ] Add version based on imp for older Python versions.
