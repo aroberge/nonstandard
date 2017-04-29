@@ -24,38 +24,25 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         # In the console, we do transformations on one line at a time,
         # and try to execute it.
 
+        
 
         if transforms.from_nonstandard.match(line):
             transforms.add_transformers(line)
-            self.buffer.append('')
+            self.buffer.append("\n")
         elif not line:  # 
-            self.buffer.append("\n") # ensure that a block ends
+            self.buffer.append(" ") # ensure that a block ends
         else:
-            # Lines of code can be invalid Python syntax if:
-            #   1. they are indented
-            #   2. they end with ":" indicating the beginning of a block
-            # We take care of these two problems as follows:
-            #   1. we remove any indent of the line prior to the transformation
-            #      and reinsert it after the transformation
-            #   2. we add a pass statement as a block prior to the
-            #      transformation and we remove it afterwards.
-            before_len = len(line)
-            line = line.strip()
-            indent = before_len - len(line)
-
-            if line.rstrip().endswith(":"):
-                line = line.rstrip() + "pass"
-
-
-            line = transforms.transform(line)
-
-            if line.rstrip().endswith(":pass"):
-                line = line.rstrip()[:-4]
-                
-            line = " " * indent + line
             self.buffer.append(line)
 
+        add_pass = False
+        if line.rstrip().endswith(":"):
+            add_pass = True
         source = "\n".join(self.buffer)
+        if add_pass:
+            source += "pass"
+        source = transforms.transform(source)
+        if add_pass:
+            source = source.rstrip()[:-4]
 
         more = self.runsource(source, self.filename)
 
