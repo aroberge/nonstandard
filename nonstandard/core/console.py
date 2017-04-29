@@ -1,4 +1,5 @@
 import code
+import platform
 import sys
 
 from . import transforms
@@ -39,16 +40,17 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
             #   2. we add a pass statement as a block prior to the
             #      transformation and we remove it afterwards.
             before_len = len(line)
-            line = line.lstrip()
+            line = line.strip()
             indent = before_len - len(line)
 
-            if line.endswith(":"):
-                line = line + " pass"
+            if line.rstrip().endswith(":"):
+                line = line.rstrip() + "pass"
+
 
             line = transforms.transform(line)
 
-            if line.endswith(": pass"):
-                line = line[:-5]
+            if line.rstrip().endswith(":pass"):
+                line = line.rstrip()[:-4]
                 
             line = " " * indent + line
             self.buffer.append(line)
@@ -62,15 +64,13 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         return more
 
 
-banner = """Python version: %s
+banner = "nonstandard console. [Python version: %s]\n" % platform.python_version()
 
-    Python console with easily modifiable syntax.\n""" % sys.version
-
-def start_console():
+def start_console(locals={}):
     sys.ps1 = "~~> "
-    console = NonStandardInteractiveConsole()
+    console = NonStandardInteractiveConsole(locals=locals)
     try:
         console.interact(banner=banner)
     except SystemExit:
-        print("Leaving non-standard console.\n")
+        print("Leaving nonstandard console.\n")
         sys.ps1 = ">>> "

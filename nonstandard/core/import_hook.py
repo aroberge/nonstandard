@@ -28,7 +28,7 @@ main_module_name = None
 def import_main(name):
     global main_module_name
     main_module_name = name 
-    __import__(name)
+    return __import__(name)
 
 
 class MyMetaFinder(MetaPathFinder):

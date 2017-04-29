@@ -64,11 +64,13 @@ def transform(source):
     source = '\n'.join(lines)
 
     for transformer in transformers:
+        print("          transformer: ", transformer)
         mod_name = __import__(transformer)
         try:
             source = mod_name.transform_source(source)
             # may raise an AttributeError at first from the interactive console
+            if not source.startswith("'''"):
+                print("source = ", source.replace("\n", "|"))
         except AttributeError:
-            print("AttributeError ignored in transforms.py")
-
+            pass
     return source
