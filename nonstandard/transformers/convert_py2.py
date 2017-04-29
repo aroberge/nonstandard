@@ -16,10 +16,8 @@ except:
     print("Cannot create MyRefactoringTool in convert_py2.")
     my_fixes = None
 
+
 def transform_source(source):
     if my_fixes is None:
         return source
-    try:
-        return my_fixes.refactor_source(source)
-    except:
-        return source
+    return my_fixes.refactor_source(source)

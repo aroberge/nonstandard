@@ -56,7 +56,8 @@ Hello world!
 
 ### Automatically processing a file - 2
 
-You can also activate some transformations by inserting them between `nonstandard`
+You can also activate some transformations by inserting them on the
+command line between `nonstandard`
 and the name of your python script on the command line.
 
 ```python
@@ -76,9 +77,11 @@ afterwards by using the `-i` flag
 > type test.py
 print "Hello world!"
 my_variable = 3
+print
 
 > python -i -m nonstandard print_keyword test
 Hello world!
+
 nonstandard console. [Python version: 3.5.2]
 
 ~~> my_variable
