@@ -1,7 +1,7 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='nonstandard',
-    version='0.9',
+    version='0.9.1',
     description="Enables easy modification of Python's syntax on the fly.",
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -13,5 +13,5 @@ setup(name='nonstandard',
     author='André Roberge',
     author_email='Andre.Roberge@gmail.com',
     license='MIT',
-    packages=['nonstandard'],
+    packages=find_packages(exclude=['dist', 'build', 'tools']),
     zip_safe=False)

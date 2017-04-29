@@ -112,6 +112,13 @@ Note that `nobreak` can be use everywhere `else` could be used,
 even if it does not make sense.
 
 
+## pep542.py 
+
+    from __nonstandard__ import pep542
+
+Trying to implement https://www.python.org/dev/peps/pep-0542/
+
+
 ## print_keyword.py 
 
     from __nonstandard__ import print_keyword
