@@ -1,4 +1,4 @@
-
+#pylint: disable W1401
 import re
 import sys
 
@@ -30,14 +30,18 @@ def import_transformer(name):
     # our import hook, both to avoid potential problems AND because we
     # found that this resulted in much faster code.
     hook = sys.meta_path[0]
-    sys.meta_path = sys.meta_path[1:]    
+    sys.meta_path = sys.meta_path[1:]
     try:
         transformers[name] = __import__(name)
     except ImportError:
         print("Warning: Import Error in add_transformers: %s not found" % name)
         transformers[name] = NullTransformer()
+    except Exception as e:
+        print("Unexpected exception in transforms.import_transformer",
+              e.__class__.__name__)
+    finally:
+        sys.meta_path.insert(0, hook) # restore import hook
 
-    sys.meta_path.insert(0, hook) # restore import hook
     return transformers[name]
 
 def extract_transformers_from_source(source):
@@ -78,11 +82,13 @@ def transform(source):
     while True:
         failed = {}
         for name in not_done:
-            transformer = import_transformer(name)
+            tr_module = import_transformer(name)
             try:
-                source = transformer.transform_source(source)
-            except:
-                failed[name] = transformer 
+                source = tr_module.transform_source(source)
+            except Exception as e:
+                failed[name] = tr_module
+                print("Unexpected exception in transforms.transform",
+                      e.__class__.__name__)
 
         if not failed:
             break
@@ -92,5 +98,5 @@ def transform(source):
                 print(key)
             break
         not_done = failed  # attempt another pass
-        
+
     return source

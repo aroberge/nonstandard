@@ -90,17 +90,22 @@ nonstandard console. [Python version: 3.5.2]
 
 _Note that there are two more **readme** files, one in the tests directory and the other in the nonstandard.transformers directory._
 
+**More to come**
+
 
 ## To do
 
-[ ] Complete readme
+- [ ] Complete readme
 
-[ ] Add code/warning to remove code-block based transformations for console 
+- [ ] Add code/warning to remove code-block based transformations for console 
 
-[ ] Add code transformation illustrating rejected PEP 315  (do while)
+- [ ] Add code transformation illustrating rejected PEP 315  (do while)
 
-[ ] Add code transformation illustrating rejected PEP 284 (for lower <= var < upper:)
+- [ ] Add code transformation illustrating rejected PEP 284 (for lower <= var < upper:)
 
-[x] Add code transformation illustrating new PEP 542 (dot assignment in functions)
+- [x] Add code transformation illustrating new PEP 542 (dot assignment in functions)
 
-[ ] Add version based on imp for older Python versions.
+- [ ] Add version based on imp for older Python versions.
+
+- [ ] Need to create automated tests for the console (perhaps use something like 
+      http://stackoverflow.com/a/15874291/558799 or http://stackoverflow.com/a/30039941/558799)

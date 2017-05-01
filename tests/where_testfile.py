@@ -16,3 +16,7 @@ def test_where():
     where:
         i: int 
     assert twice(i, next) == 5
+
+if __name__ == "__main__":
+    test_where()
+    print("Success.")

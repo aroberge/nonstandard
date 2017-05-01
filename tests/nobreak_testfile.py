@@ -15,3 +15,7 @@ def test_nobreak():
     nobreak:
         x = 42
     assert x == 1
+
+if __name__ == "__main__":
+    test_nobreak()
+    print("Success.")

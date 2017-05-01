@@ -9,3 +9,8 @@ def test_increment_decrement():
 
 def test_french():
     assert Vrai
+
+if __name__ == "__main__":
+    test_increment_decrement()
+    test_french()
+    print("Success.")

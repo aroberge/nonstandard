@@ -19,3 +19,7 @@ def test_print():
     print 
     assert output.out == ["\n"]
     sys.stdout = original
+
+if __name__ == "__main__":
+    test_print()
+    print("Success.")

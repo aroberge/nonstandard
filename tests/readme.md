@@ -11,17 +11,24 @@ However, since `nonstandard` changes the way `import` works, the _normal_ approa
 
 `X_testfile.py`'s content should be something like:
 
-    from __nonstandard__ import X_feature
+```python
+from __nonstandard__ import X_feature
 
-    def test_one():
-        ...
-        assert something, "something is tested"
-        ...
+def test_one():
+    ...
+    assert something, "something is tested"
+    ...
 
-    def test_another():
-        ...
-        assert something_else, "something else is tested"
-        ...
+def test_another():
+    ...
+    assert something_else, "something else is tested"
+    ...
+
+if __name__ == "__main__":
+    test_one()
+    test_another()
+    print("Success.")
+```
 
 To ensure that the development version of `nonstandard` is used, `test_X.py` will first import a file (`common.py`) which changes `sys.path` to ensure that this is the case.
 
@@ -52,22 +59,6 @@ Alternatively, from the tests directory, one can use
 
 ## Running a single test without pytest 
 
-To run a single test file `test_X.py` without using pytest, we need the file to contain the following three lines of code:
+To run a single test file `test_X.py` without using pytest, we simply have to do
 
-    import common
-    import X_testfile
-    common.single_file_test(X_testfile)
-
-## Combining both approaches
-
-For greater flexibility, whenever pytest can be used, the recommended content of the file `test_X.py` should be something like the following:
-
-    try:
-        from .common import nonstandard
-        from .X_testfile import *
-    except SystemError:
-        import common
-        import X_testfile
-        common.single_file_test(X_testfile)
-
-This allows pytest to run the file correctly, while also making it possible for python to run this test on its own from the command line.
+    python -m nonstandard path/to/test_X.py

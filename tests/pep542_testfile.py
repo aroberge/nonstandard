@@ -7,10 +7,14 @@ def test_pep542():
     def MyClass.square(self, x):
         return x**2
 
-    a = MyClass()
+    my_instance = MyClass()
 
-    def a.out():
+    def my_instance.out():
         return 42
 
-    assert a.out() == 42
-    assert a.square(3) == 9
+    assert my_instance.out() == 42
+    assert my_instance.square(3) == 9
+
+if __name__ == "__main__":
+    test_pep542()
+    print("Success.")

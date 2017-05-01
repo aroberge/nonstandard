@@ -3,7 +3,7 @@
 Note that the protocole followed is no longer as described in PEP 302 [1]
 
 This code was adapted from
-http://stackoverflow.com/questions/43571737/how-to-implement-an-import-hook-that-can-modify-the-source-code-on-the-fly-using/43573798#43573798
+http://stackoverflow.com/q/43571737/558799
 which is a question I asked when I wanted to adopt an approach using
 a deprecated module (imp) and which followed PEP 302.
 

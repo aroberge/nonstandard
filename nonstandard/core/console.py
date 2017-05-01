@@ -20,30 +20,25 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         with in some way (this is the same as runsource()).
 
         """
-
-        # In the console, we do transformations on one line at a time,
-        # and try to execute it.
-
-        
-
         if transforms.from_nonstandard.match(line):
             transforms.add_transformers(line)
             self.buffer.append("\n")
-        elif not line:  # 
-            self.buffer.append(" ") # ensure that a block ends
         else:
             self.buffer.append(line)
 
         add_pass = False
-        if line.rstrip().endswith(":"):
+        if line.rstrip(' ').endswith(":"):
             add_pass = True
         source = "\n".join(self.buffer)
         if add_pass:
             source += "pass"
         source = transforms.transform(source)
         if add_pass:
-            source = source.rstrip()[:-4]
+            source = source.rstrip(' ')[:-4]
 
+        # some transformations may strip an empty line meant to end a block
+        if not self.buffer[-1]:
+            source += "\n"
         more = self.runsource(source, self.filename)
 
         if not more:
@@ -51,13 +46,9 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         return more
 
 
-banner = "nonstandard console. [Python version: %s]\n" % platform.python_version()
-
-def start_console(locals={}):
+def start_console(local_vars={}):
+    '''Starts a console; modified from code.interact'''
     sys.ps1 = "~~> "
-    console = NonStandardInteractiveConsole(locals=locals)
-    try:
-        console.interact(banner=banner)
-    except SystemExit:
-        print("Leaving nonstandard console.\n")
-        sys.ps1 = ">>> "
+    banner = "nonstandard console. [Python version: %s]\n" % platform.python_version()
+    console = NonStandardInteractiveConsole(locals=local_vars)
+    console.interact(banner=banner)

@@ -13,3 +13,8 @@ def test_for():
     pour i dans intervalle(10):
         total += i
     assert total == 45
+
+if __name__ == "__main__":
+    test_bool()
+    test_for()
+    print("Success.")
