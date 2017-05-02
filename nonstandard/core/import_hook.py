@@ -1,3 +1,4 @@
+#pylint: disable=W0603, W0122
 '''A custom Importer making use of the import hook capability
 
 Note that the protocole followed is no longer as described in PEP 302 [1]
@@ -18,23 +19,36 @@ from importlib.util import spec_from_file_location
 
 from . import transforms
 
-included_transformers_path = os.path.abspath(
-                                os.path.join(os.path.dirname(__file__),
-                                             "..", 
-                                             "transformers" )) 
-sys.path.append(included_transformers_path)
+# add the path where the default transformers should be found
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "transformers")))
 
-main_module_name = None
+MAIN_MODULE_NAME = None
 def import_main(name):
-    global main_module_name
-    main_module_name = name 
+    '''Imports the module that is to be interpreted as the main module.
+
+       nonstandard is often invoked with a script meant to be run as the
+       main module its source is transformed.  The invocation will be
+
+       python -m nonstandard [trans1, trans2, ...] main_script
+
+       Python identifies nonstandard as the main script; we artificially
+       change this so that "main_script" is properly identified as such.
+    '''
+    global MAIN_MODULE_NAME
+    MAIN_MODULE_NAME = name
     return __import__(name)
 
 
 class MyMetaFinder(MetaPathFinder):
+    '''A custom finder to locate modules.  The main reason for this code
+       is to ensure that our custom loader, which does the code transformations,
+       is used.'''
     def find_spec(self, fullname, path, target=None):
+        '''finds the appropriate properties (spec) of a module, and sets
+           its loader.'''
         if not path:
-            path = [os.getcwd()]#, included_transformers_path]
+            path = [os.getcwd()]
         if "." in fullname:
             name = fullname.split(".")[-1]
         else:
@@ -50,15 +64,16 @@ class MyMetaFinder(MetaPathFinder):
             if not os.path.exists(filename):
                 continue
 
-            return spec_from_file_location(fullname, 
-                filename, 
-                loader=MyLoader(filename),
-                submodule_search_locations=submodule_locations)
+            return spec_from_file_location(fullname, filename,
+                                           loader=MyLoader(filename),
+                                           submodule_search_locations=submodule_locations)
         return None # we don't know how to import this
 
 sys.meta_path.insert(0, MyMetaFinder())
 
+
 class MyLoader(Loader):
+    '''A custom loader which will transform the source prior to its execution'''
     def __init__(self, filename):
         self.filename = filename
 
@@ -66,33 +81,35 @@ class MyLoader(Loader):
         return None # use default module creation semantics
 
     def exec_module(self, module):
-        global main_module_name
-        if module.__name__ == main_module_name:
+        '''import the source code, transforma it before executing it so that
+           it is known to Python.'''
+        global MAIN_MODULE_NAME
+        if module.__name__ == MAIN_MODULE_NAME:
             module.__name__ = "__main__"
-            main_module_name = None
+            MAIN_MODULE_NAME = None
 
         with open(self.filename) as f:
             source = f.read()
 
-        if transforms.transformers: 
+        if transforms.transformers:
             source = transforms.transform(source)
         else:
-            for linenumber, line in enumerate(source.split('\n')):
-                if transforms.from_nonstandard.match(line):
+            for line in source.split('\n'):
+                if transforms.FROM_NONSTANDARD.match(line):
                     ## transforms.transform will extract all such relevant
                     ## lines and add them all relevant transformers
                     source = transforms.transform(source)
                     break
         exec(source, vars(module))
 
-    def get_code(self, fullname):
-        # hack to silence an error when running nonstandard as main script
-        # See below for an explanation
+    def get_code(self, _):
+        '''Hack to silence an error when running nonstandard as main script
+           See below for an explanation'''
         return compile("None", "<string>", 'eval')
 
 """
 When this code was run as part of a normal script, no error was raised.
-When I changed it into a package, and tried to run it as a module, an 
+When I changed it into a package, and tried to run it as a module, an
 error occurred as shown below. By looking at the sources for the
 importlib module, I saw that some classes had a get_code() method which
 returned a code object.  Rather than trying to recreate all the code,
@@ -109,5 +126,4 @@ Leaving non-standard console.
 Traceback (most recent call last):
   ...
   AttributeError: 'MyLoader' object has no attribute 'get_code'
-
 """

@@ -1,19 +1,28 @@
-#pylint: disable W1401
+#pylint: disable=W1401, C0103, W0703
+'''This module takes care of identifying, importing and adding source
+code transformers. It also contains a function, `transform`, which
+takes care of invoking all known transformers to convert a source code.
+'''
 import re
 import sys
 
-from_nonstandard = re.compile("(^from\s+__nonstandard__\s+import\s+)")
+FROM_NONSTANDARD = re.compile("(^from\s+__nonstandard__\s+import\s+)")
 
 class NullTransformer:
-    def transform_source(self, source):
-        return source 
+    '''NullTransformer is a convenience class which can generate instances
+    to be used when a given transformer cannot be imported.'''
+    def transform_source(self, source): #pylint: disable=I0011, R0201, C0111
+        return source
 
 transformers = {}
 def add_transformers(line):
-    assert from_nonstandard.match(line)
+    '''Extract the transformers names from a line of code of the form
+       from __nonstandard__ import transformer1 [,...]
+       and adds them to the globally known dict
+    '''
+    assert FROM_NONSTANDARD.match(line)
 
-    # we started with: "from __nonstandard__ import transformer1 [,...]"
-    line = from_nonstandard.sub(' ', line)
+    line = FROM_NONSTANDARD.sub(' ', line)
     # we now have: " transformer1 [,...]"
     line = line.split("#")[0]    # remove any end of line comments
     # and insert each transformer as an item in a list
@@ -22,6 +31,13 @@ def add_transformers(line):
 
 
 def import_transformer(name):
+    '''If needed, import a transformer, and adds it to the globally known dict
+       The code inside a module where a transformer is defined should be
+       standard Python code, which does not need any transformation.
+       So, we disable the import hook, and let the normal module import
+       do its job - which is faster and likely more reliable than our
+       custom method.
+    '''
     if name in transformers:
         return transformers[name]
 
@@ -45,10 +61,16 @@ def import_transformer(name):
     return transformers[name]
 
 def extract_transformers_from_source(source):
+    '''Scan a source for lines of the form
+       from __nonstandard__ import transformer1 [,...]
+       identifying transformers to be used. Such line is passed to the
+       add_transformer function, after which it is removed from the
+       code to be executed.
+    '''
     lines = source.split('\n')
     linenumbers = []
     for number, line in enumerate(lines):
-        if from_nonstandard.match(line):
+        if FROM_NONSTANDARD.match(line):
             add_transformers(line)
             linenumbers.insert(0, number)
 
@@ -59,22 +81,18 @@ def extract_transformers_from_source(source):
 
 
 def transform(source):
-    '''Used to convert the source code, and create a new module
-       if one of the lines is of the form
-
-           ^from __nonstandard__ import transformer1 [, transformer2, ...]
-
-       (where ^ indicates the beginning of a line)
-       otherwise returns None and lets the normal import take place.
-       Note that this special code must be all on one physical line --
-       no continuation allowed by using parentheses or the
-       special \ end of line character.
+    '''Used to convert the source code, making use of known transformers.
 
        "transformers" are modules which must contain a function
 
            transform_source(source)
 
        which returns a tranformed source.
+       Some transformers (for example, those found in the standard library
+       module lib2to3) cannot cope with non-standard syntax; as a result, they
+       may fail during a first attempt. We keep track of all failing
+       transformers and keep retrying them until either they all succeeded
+       or a fixed set of them fails twice in a row.
     '''
     source = extract_transformers_from_source(source)
 

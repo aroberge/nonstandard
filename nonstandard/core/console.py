@@ -1,3 +1,4 @@
+#pylint: disable=W0102
 import code
 import platform
 import sys
@@ -5,6 +6,8 @@ import sys
 from . import transforms
 
 class NonStandardInteractiveConsole(code.InteractiveConsole):
+    '''A Python console that emulates the normal Python interpreter
+       except that it support nonstandard code transformations.'''
 
     def push(self, line):
         """Transform and push a line to the interpreter.
@@ -20,7 +23,7 @@ class NonStandardInteractiveConsole(code.InteractiveConsole):
         with in some way (this is the same as runsource()).
 
         """
-        if transforms.from_nonstandard.match(line):
+        if transforms.FROM_NONSTANDARD.match(line):
             transforms.add_transformers(line)
             self.buffer.append("\n")
         else:
