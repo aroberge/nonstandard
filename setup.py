@@ -8,8 +8,8 @@ def convert_md(filename):
 
 
 setup(name='nonstandard',
-    version='0.9.2',
-    description="Enables easy modification of Python's syntax on the fly.",
+    version='0.9.3',
+    description="Obsolete; see package *experimental*.",
     long_description = convert_md('README.md'),
     classifiers=[
         'Development Status :: 4 - Beta',
